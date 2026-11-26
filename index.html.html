@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>영어 런런 퀴즈</title>
+<style>
+:root{--bg:#fff7e6;--card:#ffffff;--ink:#2b2340;--sub:#6b6580;--pri:#ff6b6b;--acc:#4d96ff;--line:#eadfc8;--ok:#2fbf71;--bad:#e5484d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#1d1a2b;--card:#2a2640;--ink:#f3effc;--sub:#b3adc9;--line:#3b3658}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1d1a2b;--card:#2a2640;--ink:#f3effc;--sub:#b3adc9;--line:#3b3658}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.5}
+main{max-width:720px;margin:0 auto;padding:14px}
+.screen{display:none}.screen.on{display:block}
+h1{font-size:26px;margin:6px 0 2px;text-align:center}
+.sub{text-align:center;color:var(--sub);margin:0 0 14px;font-size:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 10px}
+input[type=text]{width:100%;font:inherit;font-size:17px;padding:11px 14px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.chars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ch{border:3px solid transparent;border-radius:16px;padding:6px 0;font-size:40px;text-align:center;cursor:pointer;background:none}
+.ch.sel{border-color:var(--pri);transform:scale(1.06)}
+.btn{display:block;width:100%;font:inherit;font-weight:700;font-size:18px;border:0;border-radius:14px;padding:13px;color:#fff;background:var(--pri);cursor:pointer}
+.btn.blue{background:var(--acc)}
+.btn:active{transform:scale(.98)}
+ol.lb{list-style:none;margin:0;padding:0;max-height:260px;overflow-y:auto}
+ol.lb li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;font-size:15px}
+ol.lb li.me{background:rgba(255,107,107,.18);font-weight:700}
+ol.lb .rk{width:30px;text-align:center}
+ol.lb .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ol.lb .sc{font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--sub);margin:6px 0 0}
+.empty{color:var(--sub);text-align:center;padding:10px;font-size:14px}
+#stage{position:relative;border-radius:18px;overflow:hidden;border:2px solid var(--line);background:#bfe6ff;touch-action:manipulation}
+#cv{display:block;width:100%;height:auto}
+.hud{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:3px 12px;font-size:15px}
+#items{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;min-height:56px;align-items:center}
+.it{font:inherit;background:var(--card);color:var(--ink);border:2px solid var(--acc);border-radius:14px;padding:6px 10px;cursor:pointer;text-align:center;font-size:12px}
+.it b{display:block;font-size:26px;line-height:1.1}
+#jump{margin-top:2px}
+#quiz{position:absolute;inset:0;background:rgba(30,20,60,.78);display:none;align-items:center;justify-content:center;padding:10px;overflow-y:auto}
+#quiz.on{display:flex}
+.qbox{background:var(--card);color:var(--ink);border-radius:18px;padding:14px;width:100%;max-width:560px}
+.qn{color:var(--pri);font-weight:700;font-size:13px}
+.qt{font-size:17px;font-weight:700;margin:4px 0 10px}
+.op{display:block;width:100%;text-align:left;font:inherit;font-size:15px;padding:10px 12px;margin-bottom:7px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.op.ok{border-color:var(--ok);background:rgba(47,191,113,.2)}
+.op.no{border-color:var(--bad);background:rgba(229,72,77,.2)}
+.fb{font-size:14px;margin-top:6px;min-height:22px}
+#toast{position:absolute;left:0;right:0;top:10px;text-align:center;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);pointer-events:none}
+.big{font-size:56px;text-align:center}
+.score{font-size:40px;font-weight:800;text-align:center;color:var(--pri)}
+.stat{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+</style>
+</head>
+<body>
+<main>
+
+<section id="s-start" class="screen on">
+  <h1>🏃 영어 런런 퀴즈</h1>
+  <p class="sub">공통영어2 Lesson 3 · Social Media Algorithms</p>
+  <div class="card">
+    <h2>1. 이름을 입력하세요</h2>
+    <input id="nm" type="text" maxlength="10" placeholder="예) 홍길동" autocomplete="off">
+  </div>
+  <div class="card">
+    <h2>2. 캐릭터를 골라요</h2>
+    <div class="chars" id="chars"></div>
+  </div>
+  <button class="btn" id="go">🚩 게임 시작</button>
+  <div class="card" style="margin-top:12px">
+    <h2>🏆 참가자 전체 순위</h2>
+    <ol class="lb" id="lb1"></ol>
+    <p class="note" id="note"></p>
+  </div>
+</section>
+
+<section id="s-game" class="screen">
+  <div class="hud">
+    <span class="pill" id="h-lives"></span>
+    <span class="pill" id="h-q"></span>
+    <span class="pill" id="h-sc"></span>
+  </div>
+  <div id="stage">
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div id="toast"></div>
+    <div id="quiz"><div class="qbox" id="qbox"></div></div>
+  </div>
+  <div id="items"></div>
+  <button class="btn blue" id="jump">⬆️ 점프 (스페이스 · 화면 터치)</button>
+</section>
+
+<section id="s-end" class="screen">
+  <div class="card">
+    <div class="big" id="e-ch"></div>
+    <h1 id="e-title"></h1>
+    <div class="score" id="e-sc"></div>
+    <div class="stat" id="e-stat"></div>
+  </div>
+  <div class="card">
+    <h2>🏆 참가자 전체 순위</h2>
+    <ol class="lb" id="lb2"></ol>
+  </div>
+  <button class="btn" id="again">🔁 다시 도전</button>
+</section>
+
+</main>
+<script>
+// ===== 퀴즈 (o[0]이 정답, 실행 시 보기 순서는 섞임) — 공통영어2 Lesson 3 =====
+const API="https://script.google.com/macros/s/AKfycbzWeXV2gQxfjcn9Em3PrVf1LJxpVQeGL8EZE2O1fz145bwCqanP3SjUf3BbplHNlzc/exec"; // 구글 Apps Script 웹앱 주소(/exec)를 넣으면 구글 시트에 기록됩니다
+const Q=[
+{q:"The title ‘Social Media Algorithms: A Double-Edged Sword’ suggests that algorithms have ___.",o:["both good and bad effects","only good effects","only bad effects","no effects at all"],e:"double-edged sword(양날의 검) = 좋은 점과 나쁜 점이 모두 있다는 뜻이에요."},
+{q:"‘관련 없는’이라는 뜻의 단어는?",o:["irrelevant","accurate","adorable","continuous"],e:"irrelevant information = 관련 없는 정보"},
+{q:"What job do algorithms do for us on social media?",o:["They sort through lots of irrelevant information.","They write news articles.","They make new friends for us.","They delete our search history."],e:"Algorithms do this job for us: 관련 없는 정보를 걸러 줘요."},
+{q:"If algorithms did not exist, we ___ a harder time searching for what we want.",o:["would have","will have","had","would had"],e:"가정법 과거: If + 과거형, 주어 + would + 동사원형"},
+{q:"This doesn’t happen ___ chance. It is the work of algorithms.",o:["by","in","on","with"],e:"by chance = 우연히"},
+{q:"According to xoxoxo2013, what spreads rapidly through algorithms?",o:["fake news","good music","online ads","private emails"],e:"Fake news spreads rapidly through algorithms and impacts our society."},
+{q:"Which is NOT mentioned as a previous activity that algorithms use?",o:["birthdays","likes","dislikes","search history"],e:"likes, dislikes, and search history가 나와요."},
+{q:"Algorithms prevent us ___ discovering information that offers a different point of view.",o:["from","to","of","at"],e:"prevent A from v-ing: A가 ~하는 것을 막다"},
+{q:"What is ‘information bias’?",o:["A false sense that our own views are the norm of society","Getting too little information","Learning from many different sources","A new kind of social media app"],e:"information bias = 우리가 생각하는 것이 사회의 표준이라는 잘못된 인식"},
+{q:"Algorithms are especially dangerous when it comes to ___ topics.",o:["controversial","boring","familiar","ordinary"],e:"논란이 되는(controversial) 주제에서 특히 위험해요."},
+{q:"‘…on our screens, which makes it hard for us to look away’에서 which의 용법은?",o:["계속적 용법의 관계대명사","제한적 용법의 관계대명사","의문대명사","접속사 that"],e:"which = and it. 앞 내용 전체를 받는 계속적 용법이에요."},
+{q:"So we end up ___ hours and hours online.",o:["spending","spend","to spend","spent"],e:"end up v-ing: 결국 ~하게 되다"},
+{q:"Which is NOT mentioned as something social media addiction can harm?",o:["eating habits","studies","personal relationships","mental health"],e:"studies, work, personal relationships, mental health가 나와요."},
+{q:"Why does adorable_jj like social media algorithms?",o:["They help find songs and movies that suit the commenter’s taste.","They block all fake news.","They stop people from using social media.","They show only old posts."],e:"songs or movies that suit my taste를 찾아 줘요."},
+{q:"What does chris suggest we do?",o:["Seek out different sources such as books and documentaries","Depend on social media for all information","Stop using the Internet","Share posts without reading them"],e:"다양한 출처를 찾아 정보 편향을 막자고 해요."}
+];
+const CH=[["🐱","#ffd6e0"],["🐶","#ffe3b3"],["🐰","#e6e0ff"],["🐻","#f3d9c4"],["🐼","#dfe9ee"],["🦊","#ffd3b0"],["🐥","#fff3a8"],["🐸","#d4f5c9"]];
+const IT={shield:["🛡️","방패","장애물 1회 막기"],boost:["🚀","부스터","3초 무적·가속"],heart:["❤️","하트","목숨 +1"]};
+const $=id=>document.getElementById(id);
+const cv=$("cv"),ctx=cv.getContext("2d"),W=640,GY=240;
+let sel=0,name="",G=null,raf=0,last=0,uid=null,db=null,rows=[],local=[];
+
+// ----- 화면 -----
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+CH.forEach((c,i)=>{const b=document.createElement("button");b.className="ch"+(i===0?" sel":"");b.textContent=c[0];b.style.background=c[1];b.onclick=()=>{sel=i;document.querySelectorAll(".ch").forEach((x,j)=>x.classList.toggle("sel",j===i))};$("chars").appendChild(b)});
+
+// ----- 순위표 -----
+function renderLB(){
+  ["lb1","lb2"].forEach(id=>{
+    const ol=$(id);ol.textContent="";
+    if(!rows.length){const li=document.createElement("li");li.className="empty";li.textContent="아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!";ol.appendChild(li);return}
+    rows.forEach((r,i)=>{
+      const li=document.createElement("li");if(r.id===uid||r.local||(API&&r.name===name))li.className="me";
+      const rk=document.createElement("span");rk.className="rk";rk.textContent=["🥇","🥈","🥉"][i]||String(i+1);
+      const nm=document.createElement("span");nm.className="nm";nm.textContent=(r.ch||"🐱")+" "+(r.name||"익명");
+      const sc=document.createElement("span");sc.className="sc";sc.textContent=(r.score||0)+"점";
+      li.append(rk,nm,sc);ol.appendChild(li);
+    });
+  });
+}
+function note(t){$("note").textContent=t}
+async function save(rec){
+  if(API){try{const q=new URLSearchParams({action:"save",name:rec.name,ch:rec.ch,score:rec.score,correct:rec.correct});const r=await fetch(API+"?"+q);rows=await r.json();renderLB()}catch(e){note("기록 저장에 실패했어요.")}return}
+  if(db&&uid){
+    try{const r=db.doc("scores/"+uid);const s=await r.get();const p=s.exists?s.data():null;if(!p||(p.score||0)<rec.score)await r.set(rec)}
+    catch(e){note("기록 저장에 실패했어요. 이 기기에서만 보여요.");rec.local=true;local.push(rec);rows=local.slice().sort((a,b)=>b.score-a.score);renderLB()}
+  }else{rec.local=true;local.push(rec);rows=local.slice().sort((a,b)=>b.score-a.score);renderLB()}
+}
+async function loadLB(){try{const r=await fetch(API);rows=await r.json();renderLB()}catch(e){note("순위를 불러오지 못했어요.")}}
+(async()=>{
+  renderLB();
+  if(API){loadLB();setInterval(loadLB,10000);return}
+  try{
+    if(typeof claude==="undefined"){note("미리보기 환경: 이 기기 기록만 표시됩니다.");return}
+    const u=await claude.use("user");uid=u?await u.id():null;
+    const d=await claude.use("db");
+    if(d&&uid){db=d;db.collection("scores").orderBy("score","desc").limit(30).onSnapshot(s=>{rows=s.docs.map(x=>Object.assign({id:x.id},x.data()));renderLB()},()=>note("순위를 불러오지 못했어요."))}
+    else note("로그인/공유 권한이 없어 이 기기 기록만 표시됩니다.");
+  }catch(e){note("순위를 불러오지 못했어요.")}
+})();
+
+// ----- 게임 -----
+function hud(){
+  $("h-lives").textContent="❤️".repeat(Math.max(0,G.lives))||"💔";
+  $("h-q").textContent="문제 "+Math.min(G.q+(G.paused&&!G.fin?1:0),10)+" / "+Q.length;
+  $("h-sc").textContent="⭐ "+calc()+"점";
+  const box=$("items");box.textContent="";
+  if(!G.inv.length){const s=document.createElement("span");s.className="note";s.textContent="문제를 맞히면 아이템이 생겨요!";box.appendChild(s)}
+  G.inv.forEach((k,i)=>{const b=document.createElement("button");b.className="it";const e=document.createElement("b");e.textContent=IT[k][0];b.append(e,document.createTextNode(IT[k][1]));b.title=IT[k][2];b.onclick=()=>useItem(i);box.appendChild(b)});
+}
+function calc(){return G.correct*100+Math.floor(G.dist/10)+Math.max(0,G.lives)*50+(G.won?200:0)}
+function toast(t){const e=$("toast");e.textContent=t;clearTimeout(toast.t);toast.t=setTimeout(()=>e.textContent="",1600)}
+function useItem(i){
+  if(!G||G.paused||G.over)return;
+  const k=G.inv.splice(i,1)[0];
+  if(k==="shield"){G.shield=true;toast("🛡️ 방패 장착!")}
+  if(k==="boost"){G.boost=180;toast("🚀 부스터 발동!")}
+  if(k==="heart"){G.lives=Math.min(5,G.lives+1);toast("❤️ 목숨 +1")}
+  hud();
+}
+function jump(){if(G&&!G.paused&&!G.over&&G.py===0)G.vy=12.5}
+function start(){
+  name=$("nm").value.trim();
+  if(!name){$("nm").focus();$("nm").placeholder="이름을 먼저 입력해 주세요!";return}
+  G={dist:0,sp:4,q:0,nextQ:650,obs:[],nextObs:320,py:0,vy:0,lives:3,shield:false,boost:0,hit:0,inv:[],correct:0,paused:false,fin:false,finAt:0,won:false,over:false,t:0};
+  show("s-game");hud();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+}
+function loop(now){
+  const dt=Math.min(2,(now-last)/16.67);last=now;
+  if(!G.over){update(dt);draw();raf=requestAnimationFrame(loop)}
+}
+function update(dt){
+  if(G.paused)return;
+  G.t+=dt;
+  G.sp=4+Math.min(G.q,10)*0.25;
+  const step=G.sp*(G.boost>0?1.8:1)*dt;
+  G.dist+=step;
+  if(G.boost>0)G.boost-=dt;
+  if(G.hit>0)G.hit-=dt;
+  G.vy-=0.65*dt;G.py+=G.vy*dt;if(G.py<=0){G.py=0;G.vy=0}
+  G.obs.forEach(o=>o.x-=step);
+  G.obs=G.obs.filter(o=>o.x>-50);
+  if(!G.fin&&G.dist>=G.nextObs&&G.nextQ-G.dist>300){G.obs.push({x:W+20,w:30,h:30+Math.random()*16});G.nextObs=G.dist+280+Math.random()*220}
+  const inv=G.boost>0||G.hit>0;
+  for(let i=G.obs.length-1;i>=0;i--){
+    const o=G.obs[i];
+    if(76<o.x+o.w&&104>o.x&&G.py<o.h-6){
+      if(G.boost>0)continue;
+      if(G.hit>0)continue;
+      G.obs.splice(i,1);
+      if(G.shield){G.shield=false;toast("🛡️ 방패가 막아줬어요!")}
+      else{G.lives--;G.hit=70;toast("😵 앗! 목숨 -1");if(G.lives<=0){hud();return end(false)}}
+      hud();
+    }
+  }
+  if(!G.fin&&G.dist>=G.nextQ)return openQuiz();
+  if(G.fin&&G.dist>=G.finAt){G.won=true;return end(true)}
+  if(Math.floor(G.t)%10===0)hud();
+}
+function draw(){
+  const g=ctx.createLinearGradient(0,0,0,GY);g.addColorStop(0,"#8fd3ff");g.addColorStop(1,"#e6f6ff");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,300);
+  ctx.font="34px serif";ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  for(let i=0;i<4;i++){const x=((i*230-G.dist*0.3)%920+920)%920-140;ctx.globalAlpha=.9;ctx.fillText("☁️",x,60+(i%2)*40)}
+  ctx.globalAlpha=1;
+  for(let i=0;i<3;i++){const x=((i*300-G.dist*0.6)%900+900)%900-120;ctx.fillText("🌳",x,GY-2)}
+  ctx.fillStyle="#7ed957";ctx.fillRect(0,GY,W,60);
+  ctx.fillStyle="#5fbf3f";ctx.fillRect(0,GY,W,8);
+  ctx.fillStyle="#c9b27c";
+  for(let i=0;i<12;i++){const x=((i*70-G.dist)%840+840)%840-60;ctx.fillRect(x,GY+30,36,6)}
+  if(G.fin){const fx=90+(G.finAt-G.dist);ctx.font="40px serif";ctx.fillText("🏁",fx,GY-4);ctx.fillStyle="rgba(0,0,0,.15)";ctx.fillRect(fx-2,GY,4,0)}
+  ctx.font="32px serif";
+  G.obs.forEach(o=>{ctx.fillText("🪨",o.x+o.w/2,GY+4)});
+  const c=CH[sel],py=GY-G.py;
+  if(G.hit>0&&Math.floor(G.hit/6)%2===0)ctx.globalAlpha=.35;
+  ctx.fillStyle=c[1];ctx.beginPath();ctx.arc(90,py-24,25,0,7);ctx.fill();
+  ctx.font="38px serif";ctx.fillText(c[0],90,py-11);
+  ctx.globalAlpha=1;
+  if(G.shield){ctx.strokeStyle="#4d96ff";ctx.lineWidth=4;ctx.beginPath();ctx.arc(90,py-24,32,0,7);ctx.stroke()}
+  if(G.boost>0){ctx.font="26px serif";ctx.fillText("🔥",58,py-14)}
+}
+// ----- 퀴즈 -----
+function openQuiz(){
+  G.paused=true;G.obs=[];hud();
+  const d=Q[G.q],opts=d.o.map((t,i)=>({t,ok:i===0}));
+  for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]]}
+  const box=$("qbox");box.textContent="";
+  const n=document.createElement("div");n.className="qn";n.textContent="문제 "+(G.q+1)+" / "+Q.length;
+  const t=document.createElement("div");t.className="qt";t.textContent=d.q;
+  const fb=document.createElement("div");fb.className="fb";
+  box.append(n,t);
+  let done=false;
+  opts.forEach((o,i)=>{
+    const b=document.createElement("button");b.className="op";b.textContent=(i+1)+". "+o.t;
+    b.onclick=()=>{
+      if(done)return;done=true;
+      b.classList.add(o.ok?"ok":"no");
+      if(!o.ok)[...box.querySelectorAll(".op")].forEach((x,k)=>{if(opts[k].ok)x.classList.add("ok")});
+      if(o.ok){G.correct++;const k=["shield","boost","heart"][Math.floor(Math.random()*3)];if(G.inv.length<6)G.inv.push(k);fb.textContent="⭕ 정답! "+IT[k][0]+" "+IT[k][1]+" 획득! "+d.e}
+      else fb.textContent="❌ 아쉬워요. "+d.e;
+      setTimeout(()=>{
+        $("quiz").classList.remove("on");G.q++;
+        if(G.q>=Q.length){G.fin=true;G.finAt=G.dist+420}else G.nextQ=G.dist+650;
+        G.nextObs=G.dist+260;G.paused=false;last=performance.now();hud();
+      },2300);
+    };
+    box.appendChild(b);
+  });
+  box.appendChild(fb);
+  $("quiz").classList.add("on");
+}
+// ----- 종료 -----
+function end(won){
+  G.over=true;cancelAnimationFrame(raf);
+  const sc=calc();
+  $("e-ch").textContent=CH[sel][0];
+  $("e-title").textContent=won?"🎉 완주! "+name+"님":"💪 아쉬워요! "+name+"님";
+  $("e-sc").textContent=sc+"점";
+  const st=$("e-stat");st.textContent="";
+  [["정답 "+G.correct+" / "+Q.length],["남은 목숨 "+Math.max(0,G.lives)],["남은 아이템 "+G.inv.length]].forEach(a=>{const s=document.createElement("span");s.className="pill";s.textContent=a[0];st.appendChild(s)});
+  show("s-end");
+  save({name:name,ch:CH[sel][0],score:sc,correct:G.correct,ts:Date.now()});
+}
+$("go").onclick=start;
+$("again").onclick=()=>{show("s-start")};
+$("jump").onclick=jump;
+$("stage").addEventListener("pointerdown",e=>{if(!e.target.closest("#quiz"))jump()});
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"){if(e.key==="Enter")start();return}
+  if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();jump()}
+});
+</script>
+</body>
+</html>
